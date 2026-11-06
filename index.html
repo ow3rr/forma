@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Форма">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f2f5f3">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+<style>
+html{color-scheme:light}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px system-ui,sans-serif}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<title>Форма — дневник и тренер</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Oswald:wght@500;600&display=swap">
+<style>
+/* Раскладка: одна колонка, нижняя панель вкладок; крупные поля ввода под большой палец */
+:root{
+  --bg:#f2f5f3; --surf:#ffffff; --surf2:#e8eeea; --ink:#15201c; --mute:#5d6b65; --line:#d5ded9;
+  --acc:#d4440c; --acc-ink:#ffffff; --acc-soft:#fbe4d8; --good:#1d7a4a; --good-soft:#dcf1e5; --warn:#a86400; --warn-soft:#fbefd2; --bad:#b3261e;
+  --f-body:'Golos Text',system-ui,-apple-system,'Segoe UI',sans-serif; --f-head:'Oswald','Arial Narrow',Impact,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111715; --surf:#1a2320; --surf2:#232e2a; --ink:#e9f0ec; --mute:#92a39b; --line:#2f3d38;
+  --acc:#ff7a3d; --acc-ink:#1a0d05; --acc-soft:#3a2216; --good:#4cc784; --good-soft:#173525; --warn:#e8b04a; --warn-soft:#3a2f14; --bad:#ff7b72; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111715; --surf:#1a2320; --surf2:#232e2a; --ink:#e9f0ec; --mute:#92a39b; --line:#2f3d38;
+  --acc:#ff7a3d; --acc-ink:#1a0d05; --acc-soft:#3a2216; --good:#4cc784; --good-soft:#173525; --warn:#e8b04a; --warn-soft:#3a2f14; --bad:#ff7b72; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--f-body);padding-block:0 calc(76px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));-webkit-text-size-adjust:100%}
+.wrap{max-width:640px;margin:0 auto;padding-top:14px;display:flex;flex-direction:column;gap:14px}
+h1,h2,h3{font-family:var(--f-head);font-weight:600;letter-spacing:.02em;margin:0;text-wrap:balance}
+h1{font-size:26px;text-transform:uppercase}h2{font-size:19px;text-transform:uppercase}h3{font-size:16px}
+.num{font-family:var(--f-head);font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.mute{color:var(--mute)}.sm{font-size:13px}.xs{font-size:12px}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.sp{justify-content:space-between}
+.grow{flex:1;min-width:0}
+.btn{appearance:none;border:1px solid var(--line);background:var(--surf2);color:var(--ink);font:600 15px var(--f-body);padding:12px 16px;border-radius:10px;cursor:pointer;min-height:46px}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.btn.sm{padding:8px 12px;min-height:38px;font-size:14px}.btn.blk{width:100%}
+.btn.ghost{background:transparent}.btn.dng{color:var(--bad)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.tab:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:600;background:var(--surf2);color:var(--mute)}
+.chip.acc{background:var(--acc-soft);color:var(--acc)}.chip.good{background:var(--good-soft);color:var(--good)}.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.note{border-radius:10px;padding:12px;background:var(--surf2);display:flex;flex-direction:column;gap:6px}
+.note.good{background:var(--good-soft)}.note.warn{background:var(--warn-soft)}.note.acc{background:var(--acc-soft)}
+.note b{font-size:14px}
+input,select,textarea{font:16px var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;min-height:44px;width:100%;min-width:0}
+textarea{min-height:90px;resize:vertical}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mute)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1;min-width:84px;appearance:none;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:500 14px var(--f-body);padding:10px 8px;border-radius:9px;cursor:pointer;min-height:44px}
+.seg button.on{background:var(--acc);border-color:var(--acc);color:var(--acc-ink);font-weight:600}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.days button{padding:10px 0;min-width:0;flex:none}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surf);border-top:1px solid var(--line);display:flex;padding:6px max(8px,env(safe-area-inset-left,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-right,0px))}
+.tab{flex:1;appearance:none;border:0;background:none;color:var(--mute);font:500 12px var(--f-body);padding:8px 0;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:48px}
+.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab.on{color:var(--acc);font-weight:600}
+.list{display:flex;flex-direction:column}
+.li{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line);min-width:0}
+.li:first-child{border-top:0}
+.kg{font-family:var(--f-head);font-size:18px;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--surf)}
+th.cur,td.cur{background:var(--acc-soft)}
+.scroll{overflow-x:auto;margin:0 -14px;padding:0 14px}
+.over{position:fixed;inset:0;z-index:40;background:var(--bg);overflow-y:auto;padding-block:0 120px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.over[hidden]{display:none!important}
+.hdr{position:sticky;top:env(safe-area-inset-top,0px);z-index:3;background:var(--bg);padding:10px 0;display:flex;gap:10px;align-items:center}
+.over::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:4}
+.sheetbg{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheetbg[hidden]{display:none!important}
+.sheet{background:var(--bg);width:100%;max-width:640px;max-height:88%;overflow-y:auto;border-radius:16px 16px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
+.setrow{display:grid;grid-template-columns:24px minmax(0,1.4fr) minmax(0,1fr) 46px;gap:8px;align-items:center}
+.setrow input{text-align:center;font-family:var(--f-head);font-size:18px;padding:8px 4px}
+.kgbox{display:grid;grid-template-columns:34px minmax(0,1fr) 34px;gap:4px;align-items:center}
+.kgbox button{appearance:none;border:1px solid var(--line);background:var(--surf2);color:var(--ink);border-radius:8px;min-height:44px;font-size:18px;cursor:pointer;padding:0}
+.ok{appearance:none;border:1px solid var(--line);background:var(--bg);border-radius:10px;min-height:44px;color:var(--mute);cursor:pointer;font-size:18px}
+.ok.on{background:var(--good);border-color:var(--good);color:#fff}
+.timer{position:fixed;left:0;right:0;bottom:0;z-index:45;background:var(--ink);color:var(--bg);display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px max(16px,env(safe-area-inset-left,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px))}
+.timer[hidden]{display:none!important}
+.timer .num{font-size:26px}
+.timer .btn{background:transparent;color:var(--bg);border-color:var(--bg);min-height:38px;padding:6px 12px}
+svg text{fill:var(--mute);font:11px var(--f-body)}
+.stack{display:flex;flex-direction:column;gap:6px}
+.empty{text-align:center;padding:24px 8px;color:var(--mute)}
+details>summary{cursor:pointer;font-weight:600;min-height:32px}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}}
+</style>
+
+<div class="wrap" id="app"></div>
+<nav class="tabs" id="tabs" aria-label="Разделы"></nav>
+<div class="over" id="ed" hidden></div>
+<div class="timer" id="timer" hidden><span class="mute" style="color:inherit;opacity:.7">Отдых</span><span class="num" id="tmv">0:00</span><button class="btn" data-act="tm-add">+30 с</button><button class="btn" data-act="tm-stop">Пропустить</button></div>
+<div class="sheetbg" id="sheetbg" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+
+<script>
+/* ============================================================ утилиты */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const dkey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseK=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
+const todayK=()=>dkey(new Date());
+const addD=(k,n)=>{const d=parseK(k);d.setDate(d.getDate()+n);return dkey(d)};
+const diffD=(a,b)=>Math.round((parseK(b)-parseK(a))/864e5);
+const wdi=k=>(parseK(k).getDay()+6)%7;
+const mondayOf=k=>addD(k,-wdi(k));
+const WD=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const MON=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+const dateRu=k=>{const d=parseK(k);return `${WD[wdi(k)]}, ${d.getDate()} ${MON[d.getMonth()]}`};
+const fmt=(n,dg=1)=>{if(n==null||isNaN(n))return '—';return (Math.round(n*10**dg)/10**dg).toString().replace('.',',')};
+const roundTo=(x,inc)=>inc?+(Math.round(x/inc)*inc).toFixed(2):x;
+const clone=o=>JSON.parse(JSON.stringify(o));
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4);
+const plural=(n,a,b,c)=>{const m=Math.abs(n)%100,k=m%10;return m>10&&m<20?c:k===1?a:k>=2&&k<=4?b:c};
+
+/* ============================================================ библиотека упражнений */
+// grp — группа для замены; tags — зоны, которые упражнение нагружает (для травм); grip — нужен хват (кисть)
+const EX={
+ leg_press:{n:'Жим ногами',grp:'quad',comp:1,inc:5,tags:['knee']},
+ leg_ext:{n:'Разгибание ног',grp:'quad',inc:2.5,tags:['knee']},
+ rdl_db:{n:'Румынская тяга с гантелями',grp:'hinge',comp:1,inc:2,grip:1,tags:['back','wrist']},
+ back_ext:{n:'Гиперэкстензия',grp:'hinge',inc:2.5,bw:1,tags:['back']},
+ leg_curl:{n:'Сгибание ног',grp:'hamstr',inc:2.5,tags:[]},
+ hip_thrust:{n:'Ягодичный мост со штангой',grp:'glute',comp:1,inc:5,tags:['back']},
+ hip_abd:{n:'Отведение бедра в тренажёре',grp:'glute2',inc:2.5,tags:[]},
+ chest_press:{n:'Жим от груди в тренажёре',grp:'push',comp:1,inc:2.5,tags:['shoulder','wrist']},
+ pec_deck:{n:'Бабочка',grp:'push',inc:2.5,tags:['shoulder']},
+ shoulder_press:{n:'Жим плечами в тренажёре',grp:'delt',comp:1,inc:2.5,tags:['shoulder','wrist']},
+ lateral_raise:{n:'Разведения в стороны на блоке',grp:'delt2',inc:1,tags:['shoulder']},
+ face_pull:{n:'Тяга к лицу',grp:'rear',inc:2.5,tags:['shoulder']},
+ lat_pulldown:{n:'Тяга верхнего блока',grp:'vpull',comp:1,inc:2.5,grip:1,tags:['shoulder','wrist']},
+ cable_row:{n:'Тяга нижнего блока',grp:'hpull',comp:1,inc:2.5,grip:1,tags:['back','wrist']},
+ machine_row:{n:'Тяга в тренажёре',grp:'hpull',comp:1,inc:2.5,grip:1,tags:['wrist']},
+ pushdown:{n:'Разгибание рук на блоке',grp:'tri',inc:2.5,tags:['wrist']},
+ biceps_curl:{n:'Сгибание рук на блоке',grp:'bi',inc:2.5,tags:['wrist']},
+ calf_press:{n:'Подъём на носки в тренажёре',grp:'calf',inc:5,tags:[]},
+ cable_crunch:{n:'Скручивания на блоке',grp:'core',inc:2.5,tags:[]},
+ plank:{n:'Планка на предплечьях',grp:'core2',time:1,inc:5,tags:[]}
+};
+const GRP_ALT={quad:['leg_press','leg_ext'],push:['chest_press','pec_deck'],hpull:['cable_row','machine_row'],hinge:['rdl_db','back_ext'],core:['cable_crunch'],core2:['plank'],vpull:['lat_pulldown'],delt:['shoulder_press'],delt2:['lateral_raise'],rear:['face_pull'],glute:['hip_thrust'],glute2:['hip_abd'],hamstr:['leg_curl'],tri:['pushdown'],bi:['biceps_curl'],calf:['calf_press']};
+const AREAS={knee:'Колено',back:'Спина',shoulder:'Плечо',wrist:'Кисть'};
+
+const TPL={
+ 2:[{id:'A',t:'Всё тело A',ex:['leg_press','chest_press','cable_row','leg_curl','lateral_raise','plank']},
+    {id:'B',t:'Всё тело B',ex:['hip_thrust','lat_pulldown','shoulder_press','leg_ext','face_pull','cable_crunch']}],
+ 3:[{id:'A',t:'Всё тело A',ex:['leg_press','chest_press','cable_row','leg_curl','lateral_raise','calf_press','plank']},
+    {id:'B',t:'Всё тело B',ex:['leg_ext','hip_thrust','lat_pulldown','chest_press','shoulder_press','face_pull','cable_crunch']},
+    {id:'C',t:'Всё тело C',ex:['leg_press','pec_deck','machine_row','rdl_db','hip_abd','pushdown','biceps_curl']}],
+ 4:[{id:'U1',t:'Верх A',ex:['chest_press','lat_pulldown','shoulder_press','cable_row','pushdown','biceps_curl']},
+    {id:'L1',t:'Низ A',ex:['leg_press','rdl_db','leg_curl','calf_press','plank','hip_abd']},
+    {id:'U2',t:'Верх B',ex:['pec_deck','machine_row','lateral_raise','face_pull','pushdown','biceps_curl']},
+    {id:'L2',t:'Низ B',ex:['hip_thrust','leg_ext','back_ext','leg_curl','calf_press','cable_crunch']}]
+};
+const GOALS={tone:{n:'Тонус и форма',c:[10,15],i:[12,18],rest:1},fat:{n:'Снижение жира',c:[10,15],i:[12,20],rest:.8},muscle:{n:'Набор мышц',c:[8,12],i:[10,15],rest:1},strength:{n:'Сила',c:[5,8],i:[8,12],rest:1.3}};
+const LEVELS={beginner:{n:'Новичок',c:3,i:2,rate:.035},intermediate:{n:'Средний',c:4,i:3,rate:.02},advanced:{n:'Опытный',c:4,i:3,rate:.01}};
+const W=[null,
+ {n:'Вход в цикл',rir:3,rt:'3'},{n:'Рабочая',rir:2,rt:'2'},{n:'Пик',rir:1,rt:'1–2'},{n:'Разгрузка',rir:4,rt:'4+',dl:1},
+ {n:'Новый заход',rir:3,rt:'3'},{n:'Рабочая',rir:2,rt:'2'},{n:'Пик',rir:1,rt:'1–2'},{n:'Разгрузка и контроль',rir:4,rt:'4+',dl:1}];
+
+/* ============================================================ состояние */
+const DEFP=()=>{const t=todayK(),m=mondayOf(t);return {goal:'tone',level:'beginner',days:[0,2,4],wrist:true,start:wdi(t)<=1?m:addD(m,7),created:Date.now()}};
+let S={profile:null,slots:null,lifts:{},ramp:null,deloadUntil:null,draft:null,_ts:0};
+let LOG={};                    // 'YYYY-MM' -> {sessions:[], _ts}
+let UI={tab:'today',open:{},exSel:null,editor:null,sheet:null,syncing:!!(window.claude&&typeof window.claude.use==='function')};
+
+const lsGet=k=>{try{const v=localStorage.getItem('forma:'+k);return v?JSON.parse(v):null}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem('forma:'+k,JSON.stringify(v))}catch(e){}};
+function loadLocal(){
+  const s=lsGet('state'); if(s)S=Object.assign(S,s);
+  try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('forma:log-')){const v=JSON.parse(localStorage.getItem(k));LOG[k.slice(10)]=v}}}catch(e){}
+}
+function allSessions(){const a=[];Object.values(LOG).forEach(m=>(m.sessions||[]).forEach(s=>a.push(s)));return a.sort((x,y)=>x.date<y.date?-1:x.date>y.date?1:(x.created||0)-(y.created||0))}
+const lastSession=()=>{const a=allSessions();return a[a.length-1]||null};
+
+/* ---------- синхронизация (когда страница открыта в Claude) ---------- */
+const Sync={db:null,uid:null,timers:{},busy:{},dirty:{},state:'local'};
+const docObj=k=>k==='state'?S:LOG[k.slice(4)];
+function persist(k){const o=docObj(k);o._ts=Date.now();lsSet(k,o);if(Sync.db){clearTimeout(Sync.timers[k]);Sync.timers[k]=setTimeout(()=>push(k),600)}}
+const saveState=()=>persist('state');
+function saveLog(mk){persist('log-'+mk)}
+async function push(k){
+  Sync.timers[k]=null;
+  if(Sync.busy[k]){Sync.dirty[k]=true;return}
+  Sync.busy[k]=true;
+  try{await Sync.db.doc(`data/users/${Sync.uid}/${k}`).set(clone(docObj(k)));Sync.fail=0;setSync('ok')}
+  catch(e){if(e&&e.code==='invalid_argument')setSync('ro');else{setSync('err');Sync.dirty[k]=true;Sync.fail=(Sync.fail||0)+1}}
+  Sync.busy[k]=false;
+  if(Sync.dirty[k]){Sync.dirty[k]=false;Sync.timers[k]=setTimeout(()=>push(k),Math.min(60000,1500*2**(Sync.fail||0)))}
+}
+function flush(){if(!Sync.db)return;Object.keys(Sync.timers).forEach(k=>{if(Sync.timers[k]){clearTimeout(Sync.timers[k]);push(k)}})}
+function localKeys(){const a=['state'];Object.keys(LOG).forEach(m=>a.push('log-'+m));return a}
+async function pull(first){
+  if(!Sync.db)return;
+  let changed=false;
+  try{
+    const snap=await Sync.db.collection(`data/users/${Sync.uid}`).get();
+    const remote={};snap.docs.forEach(d=>{remote[d.id]=d.data()});
+    const keys=new Set([...Object.keys(remote),...localKeys()]);
+    keys.forEach(k=>{
+      if(!(k==='state'||/^log-\d{4}-\d{2}$/.test(k)))return;
+      if(Sync.busy[k]||Sync.timers[k])return;
+      const r=remote[k],mk=k.slice(4),l=k==='state'?S:LOG[mk];
+      if(r){
+        const lts=l?l._ts||0:0,rts=r._ts||0;
+        if(k!=='state'&&l&&lts!==rts){const m=mergeLog(l,r);LOG[mk]=m;lsSet(k,m);changed=true;Sync.timers[k]=setTimeout(()=>push(k),300)}
+        else if(rts>lts){const v=clone(r);if(k==='state')S=Object.assign({profile:null,slots:null,lifts:{},ramp:null,deloadUntil:null,draft:null},v);else LOG[mk]=v;lsSet(k,v);changed=true}
+        else if(lts>rts&&l&&(k==='state'?S.profile:true))Sync.timers[k]=setTimeout(()=>push(k),300);
+      }else if(l&&(l._ts||0)>0&&(k!=='state'||S.profile))Sync.timers[k]=setTimeout(()=>push(k),300);
+    });
+  }catch(e){setSync('err')}
+  if(changed&&!UI.editor)renderAll();
+}
+// слияние месяца журнала: тренировки по id, удаления — отметками времени
+function mergeLog(a,b){
+  const del=Object.assign({},a.del,b.del),map={},ts=s=>s.upd||s.created||0;
+  [...(a.sessions||[]),...(b.sessions||[])].forEach(s=>{const o=map[s.id];if(!o||ts(s)>ts(o))map[s.id]=s});
+  const sessions=Object.values(map).filter(s=>!(del[s.id]&&del[s.id]>=ts(s)));
+  return {sessions,del,_ts:Math.max(a._ts||0,b._ts||0)+1};
+}
+function setSync(st){Sync.state=st;const el=$('#syncState');if(el)el.textContent=syncLabel()}
+const syncLabel=()=>({ok:'Всё сохраняется автоматически и одинаково на телефоне и компьютере.',local:'Данные лежат только в этом браузере. Синхронизация включается, когда страница открыта через claude.ai.',ro:'Только просмотр: сохранять данные здесь нельзя.',err:'Нет связи с хранилищем. Данные сохранены на этом устройстве и отправятся позже.'}[Sync.state]||'');
+async function initSync(){
+  try{
+    if(!window.claude||typeof window.claude.use!=='function')return;
+    const [db,user]=await Promise.all([window.claude.use('db'),window.claude.use('user')]);
+    if(!db||!user)return;
+    const id=await user.id();if(!id)return;
+    Sync.db=db;Sync.uid=id;setSync('ok');await pull(true);
+  }catch(e){setSync('local')}
+  finally{UI.syncing=false;if(!S.profile)renderAll()}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){if(UI.editor){clearTimeout(UI.dt);persistDraft()}flush()}else pull(false)});
+window.addEventListener('pagehide',()=>{if(UI.editor){clearTimeout(UI.dt);persistDraft()}flush()});
+window.addEventListener('online',()=>{Sync.fail=0;flush();pull(false)});
+
+/* ============================================================ движок тренера */
+function weekOf(k){const P=S.profile;const n=Math.floor(diffD(P.start,k)/7)+1;return Math.max(1,Math.min(8,n))}
+const cycleDone=k=>diffD(S.profile.start,k)>=56;
+const isDeload=k=>(!cycleDone(k)&&!!W[weekOf(k)].dl)||!!(S.deloadUntil&&k<=S.deloadUntil);
+// после недели 8 цикл сам начинается заново, рабочие веса сохраняются
+function autoCycle(){const P=S.profile;if(!P)return;const t=todayK();let ch=false;while(cycleDone(t)){P.start=addD(P.start,56);ch=true}if(ch)saveState()}
+function gCurve(level){const r=LEVELS[level].rate,g=[0,1];for(let n=2;n<=8;n++)g[n]=W[n].dl?g[n-1]:g[n-1]*(1+r);return g}
+function range(id,week){
+  const G=GOALS[S.profile.goal],e=EX[id];
+  let [lo,hi]=e.comp?G.c:G.i;
+  if(week>=5&&e.comp){lo=Math.max(5,lo-2);hi=Math.max(lo+2,hi-2)}
+  return [lo,hi];
+}
+const restSec=id=>Math.round((EX[id].time?45:EX[id].comp?120:75)*GOALS[S.profile.goal].rest/5)*5;
+function slotsFor(n){const t=TPL[n]||TPL[3];const o={};t.forEach(d=>{o[d.id]=d.ex.slice()});return o}
+function dayDefs(){const n=Math.min(4,Math.max(2,S.profile.days.length));return TPL[n].map(d=>({id:d.id,t:d.t,ex:(S.slots&&S.slots[d.id])||d.ex}))}
+function nextDay(){const defs=dayDefs();const ls=allSessions().filter(s=>s.dayId).pop();if(!ls)return defs[0];const i=defs.findIndex(d=>d.id===ls.dayId);return defs[(i+1)%defs.length]||defs[0]}
+
+// план конкретного дня: подходы, повторы, вес, запас
+function planDay(def,dateK,ready){
+  const P=S.profile,wk=weekOf(dateK),W0=W[wk],dl=isDeload(dateK),ramp=S.ramp;
+  const items=def.ex.map((id,idx)=>{
+    const e=EX[id],lift=S.lifts[id],L=LEVELS[P.level];
+    let sets=(e.comp?L.c:L.i)-(dl?1:0)-(ramp&&ramp.cut>0?1:0)-(ready===1?1:0);sets=Math.max(2,sets);
+    const [lo,hi]=range(id,wk);
+    const f=(dl?.85:1)*(ramp?ramp.left[0]:1)*(ready===1?.92:1);
+    let kg=null,sec=null;
+    if(e.time){sec=Math.max(15,roundTo(((lift&&lift.w)||30)*f,5))}
+    else if(lift&&lift.w!=null){kg=lift.w===0?0:Math.max(e.inc,roundTo(lift.w*f,e.inc))}
+    const avoid=ramp&&ramp.avoid&&e.tags.includes(ramp.avoid);
+    let alt=null;if(avoid){const cand=Object.keys(EX).filter(x=>x!==id&&EX[x].grp===e.grp&&!EX[x].tags.includes(ramp.avoid));alt=cand[0]||null}
+    return {id,sets,lo,hi,kg,sec,rir:dl?4:ramp?3:W0.rir,warm:idx===0&&e.comp&&kg>0,avoid,alt,grip:!!(P.wrist&&e.grip)};
+  });
+  return {week:wk,dl,items};
+}
+const e1=(kg,reps)=>kg*(1+reps/30);
+
+// адаптация нагрузки по итогам упражнения в тренировке
+function adaptEx(ex,plan,ctx){
+  const e=EX[ex.id],lift=S.lifts[ex.id];
+  const done=ex.sets.filter(s=>s.done&&+s.reps>0);
+  if(!done.length||ex.skip)return null;
+  const planned=plan?plan.sets:done.length,lo=plan?plan.lo:8,hi=plan?plan.hi:12,rirT=plan?plan.rir:2;
+  const reps=done.map(s=>+s.reps),avg=reps.reduce((a,b)=>a+b,0)/reps.length;
+  if(e.time){
+    const tgt=plan&&plan.sec||(lift&&lift.w)||30;
+    const ok=reps.every(r=>r>=tgt)&&done.length>=planned;
+    if(ctx.noUp)return {id:ex.id,kind:'keep',text:`${e.n}: время ${fmt(avg,0)} с записано`};
+    if(ok&&ex.feel!=='hard'){const nw=tgt+5;S.lifts[ex.id]={w:nw};return {id:ex.id,kind:'up',text:`${e.n}: цель ${nw} с в следующий раз`}}
+    if(!lift)S.lifts[ex.id]={w:Math.max(15,roundTo(Math.min(...reps),5))};
+    return {id:ex.id,kind:'keep',text:`${e.n}: повтори ${tgt} с`};
+  }
+  const used=Math.max(...done.map(s=>+s.kg||0));
+  // калибровка: вес ещё не известен — выводим из сделанного
+  if(!lift||lift.w==null){
+    if(used===0){
+      if(e.bw){S.lifts[ex.id]={w:0};return {id:ex.id,kind:'set',text:`${e.n}: начинаем с веса тела`}}
+      return {id:ex.id,kind:'keep',text:`${e.n}: вес не записан, впиши его, чтобы тренер считал нагрузку`};
+    }
+    const best=Math.max(...done.map(s=>e1(+s.kg||0,+s.reps)));
+    let w=best/(1+((lo+hi)/2+rirT)/30);
+    if(ex.feel==='hard')w*=.95;if(ex.feel==='easy')w*=1.05;
+    w=Math.max(e.inc,roundTo(w,e.inc));S.lifts[ex.id]={w};
+    return {id:ex.id,kind:'set',text:`${e.n}: рабочий вес ${fmt(w)} кг подобран`};
+  }
+  if(ctx.noUp){return {id:ex.id,kind:'keep',text:`${e.n}: ${ctx.why}, вес в базе не меняю`}}
+  let w=used>0?used:lift.w;
+  const base=lift.w,tgt=plan&&plan.kg!=null?plan.kg:used;
+  const lowDrop=avg<lo-2;
+  const hitHi=done.length>=planned&&reps.every(r=>r>=hi);
+  const mid=(lo+hi)/2;
+  let kind='keep',txt='';
+  if((ex.feel==='hard'&&done.some(s=>+s.reps<lo))||lowDrop){
+    let nw=roundTo(w*.95,e.inc);if(nw>=w)nw=w-e.inc;nw=Math.max(0,nw);
+    S.lifts[ex.id]={w:nw};kind='down';txt=`${e.n}: снижаю до ${fmt(nw)} кг, закрепи технику`;
+  }else if((hitHi&&ex.feel!=='hard')||(ex.feel==='easy'&&avg>=mid&&done.length>=planned)){
+    const nw=roundTo(w+e.inc,e.inc);S.lifts[ex.id]={w:nw};kind='up';txt=`${e.n}: +${fmt(e.inc)} кг, следующий раз ${fmt(nw)} кг`;
+  }else{
+    if(Math.abs(w-base)>=e.inc&&w!==tgt&&used>0){S.lifts[ex.id]={w:used}}
+    txt=avg>=lo?`${e.n}: оставляю ${fmt(S.lifts[ex.id].w)} кг, добавляй повторы до ${hi}`:`${e.n}: повтори ${fmt(S.lifts[ex.id].w)} кг`;
+  }
+  return {id:ex.id,kind,text:txt};
+}
+
+function finalizeSession(s){
+  if(s.adhoc){s.adapt=[];return []}                       // свободные тренировки не двигают веса и лестницу
+  const dl=isDeload(s.date),ramp=S.ramp,low=s.ready===1;
+  const ctx={noUp:!!(dl||ramp||low),why:dl?'разгрузка':ramp?'возвращение после паузы':'плохое самочувствие'};
+  const out=[];
+  s.ex.forEach(x=>{const r=adaptEx(x,x.plan||null,ctx);if(r)out.push(r)});
+  s.adapt=out;
+  if(ramp){ramp.left.shift();ramp.cut=Math.max(0,ramp.cut-1);if(!ramp.left.length)S.ramp=null}
+  return out;
+}
+
+/* ---------- перерывы, болезни, травмы ---------- */
+function rampFor(gap){
+  if(gap>60)return {left:[.65,.75,.85,.92,1],cut:2};
+  if(gap>28)return {left:[.75,.85,.92,1],cut:2};
+  if(gap>14)return {left:[.85,.92,1],cut:1};
+  return {left:[.93,1],cut:0};
+}
+function ensureRamp(){
+  if(!S.profile)return;autoCycle();
+  const ls=lastSession();if(!ls)return;
+  const gap=diffD(ls.date,todayK());
+  if(gap>=8&&(!S.ramp||(S.ramp.kind==='break'&&gap>S.ramp.gap))){
+    // после долгой паузы позиция в цикле сдвигается на пропущенные недели, чтобы разгрузка не выпала сразу после возвращения
+    if(gap>=15&&!S.ramp){let w0=weekOf(ls.date);if(W[w0].dl)w0=Math.max(1,w0-1);S.profile.start=addD(mondayOf(todayK()),-7*(w0-1))}
+    S.ramp=Object.assign({kind:'break',gap,since:ls.date},rampFor(gap));saveState();
+  }
+}
+function fatigueFlag(){
+  const a=allSessions().filter(s=>!s.adhoc).slice(-3);
+  if(a.length<2)return false;
+  const bad=a.filter(s=>s.ready===1||(s.adapt||[]).filter(x=>x.kind==='down').length>=2).length;
+  return bad>=2&&!(S.deloadUntil&&S.deloadUntil>=todayK());
+}
+function weekMissed(){            // сколько запланированных тренировок недели уже не хватает (день недели не важен)
+  const P=S.profile,t=todayK(),m=mondayOf(t);
+  const due=P.days.filter(d=>addD(m,d)<t).length;
+  const did=allSessions().filter(s=>s.date>=m&&s.date<t&&!s.adhoc).length;
+  return Math.max(0,due-did);
+}
+
+/* ============================================================ подсказки тренера */
+function coachCards(){
+  const P=S.profile,t=todayK(),c=[],ls=lastSession(),wk=weekOf(t);
+  if(S.ramp){
+    const r=S.ramp,f=Math.round(r.left[0]*100);
+    if(r.kind==='injury')c.push({tone:'warn',h:`Восстановление после травмы: ${AREAS[r.avoid]||''}`,t:`Ближайшие ${r.left.length} ${plural(r.left.length,'тренировка','тренировки','тренировок')} идут по лестнице: сейчас ${f}% от рабочего веса, запас 3 повтора. Упражнения на больную зону помечены. Боль 0–2 из 10 и не хуже наутро — можно идти дальше. Выше — вес не повышай, при 5 и больше или резкой боли остановись и покажись врачу.`});
+    else c.push({tone:'warn',h:ls?`Ты не тренировался ${diffD(r.since||ls.date,t)} ${plural(diffD(r.since||ls.date,t),'день','дня','дней')}`:'Возвращение к тренировкам',t:`Первые ${r.left.length} ${plural(r.left.length,'тренировка','тренировки','тренировок')} — мягкий вход: сейчас ${f}% от рабочего веса, запас 3 повтора${r.cut>0?', на подход меньше':''}. Мышцы и связки отстают от «ощущения силы», поэтому не гонись за старыми весами. Рабочие веса в базе сохранены и вернутся сами.`,act:diffD(r.since||ls.date,t)>14&&weekOf(t)>1?{k:'restart',l:'Начать 8-недельный цикл заново'}:null});
+  }
+  if(S.deloadUntil&&S.deloadUntil>=t)c.push({tone:'warn',h:'Разгрузочная неделя по твоему решению',t:`До ${dateRu(S.deloadUntil)}: вес −15%, на подход меньше, запас 4 повтора. Выспись и поешь белок — потом вернёмся к росту.`});
+  else if(W[wk].dl&&!cycleDone(t))c.push({tone:'acc',h:`Неделя ${wk} из 8: ${W[wk].n}`,t:'Вес −15% и на подход меньше. Это не пропуск, а то, что даёт расти дальше без травм. Запас повторов 4 и больше.'});
+  else if(!S.ramp&&!cycleDone(t))c.push({tone:'acc',h:`Неделя ${wk} из 8: ${W[wk].n}`,t:`Запас повторов — ${W[wk].rt}. Двигаемся по двойной прогрессии: когда во всех подходах дошёл до верхней границы повторов и не было «тяжело», вес растёт сам.`});
+  if(wk===8&&!S.ramp)c.push({tone:'good',h:'Последняя неделя цикла',t:'Сравни веса с первой неделей на вкладке «Прогресс». Со следующего понедельника цикл начнётся заново с твоими нынешними весами, прогноз пересчитается.'});
+  if(fatigueFlag())c.push({tone:'warn',h:'Похоже на накопленную усталость',t:'Две из трёх последних тренировок прошли тяжело. Возьми неделю с облегчённой нагрузкой: вес −15%, на подход меньше.',act:{k:'deload',l:'Взять разгрузочную неделю'}});
+  if(ls&&ls.adapt&&ls.adapt.length){
+    const up=ls.adapt.filter(x=>x.kind==='up'),dn=ls.adapt.filter(x=>x.kind==='down');
+    if(up.length||dn.length)c.push({tone:dn.length?'warn':'good',h:'После прошлой тренировки',t:[...up.map(x=>x.text),...dn.map(x=>x.text)].slice(0,4).join('. ')+'.'});
+  }
+  const miss=weekMissed();
+  if(miss&&!S.ramp)c.push({tone:'',h:`На этой неделе не хватает ${miss} ${plural(miss,'тренировки','тренировок','тренировок')}`,t:'Не догоняй и не удваивай. Продолжай со следующей тренировки по списку. Минимум для прогресса — две в неделю.'});
+  if(!ls)c.push({tone:'',h:'Первая тренировка',t:'Если вес в упражнении неизвестен, подбери его: 2 разминочных подхода и рабочий с запасом 3 повтора. После отметь «легко / нормально / тяжело» — тренер сам рассчитает рабочий вес.'});
+  return c;
+}
+
+/* ============================================================ отрисовка */
+const IC={
+ today:'<path d="M4 7h16M4 12h16M4 17h10"/>',diary:'<path d="M6 4h12v16H6zM9 8h6M9 12h6M9 16h4"/>',plan:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+ stats:'<path d="M5 20V10M12 20V4M19 20v-7"/>',more:'<circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/>'};
+const TABS=[['today','Сегодня'],['diary','Дневник'],['plan','План'],['stats','Прогресс'],['more','Ещё']];
+function renderTabs(){$('#tabs').innerHTML=TABS.map(([k,n])=>`<button class="tab${UI.tab===k?' on':''}" data-act="tab" data-k="${k}"><svg viewBox="0 0 24 24" aria-hidden="true">${IC[k==='more'?'more':k]}</svg>${n}</button>`).join('')}
+function go(k){UI.tab=k;try{history.replaceState(null,'','#'+k)}catch(e){location.hash=k}renderAll();window.scrollTo(0,0)}
+function renderAll(){renderTabs();const a=$('#app');
+  if(!S.profile){a.innerHTML=onboardHtml();return}
+  a.innerHTML=({today:todayHtml,diary:diaryHtml,plan:planHtml,stats:statsHtml,more:moreHtml}[UI.tab]||todayHtml)();
+  if(UI.editor)renderEditor();
+}
+
+/* ---------- первый запуск ---------- */
+function onboardHtml(){
+  const P=UI.ob||(UI.ob=DEFP());
+  return `<h1>Форма</h1><p class="mute">Дневник тренировок и тренер: составит 8-недельный план под цель, уровень и расписание, а после каждой тренировки сам пересчитает веса.</p>
+  <section class="card">${profileFields(P,'ob')}<button class="btn pri blk" data-act="ob-go"${UI.syncing?' disabled':''}>${UI.syncing?'Загружаю данные…':'Составить план'}</button></section>`;
+}
+function profileFields(P,pre){
+  const seg=(key,obj,cur)=>`<div class="seg">${Object.entries(obj).map(([k,v])=>`<button class="${cur===k?'on':''}" data-act="pf" data-pre="${pre}" data-key="${key}" data-v="${k}">${v.n}</button>`).join('')}</div>`;
+  return `<div class="stack"><label class="f">Цель</label>${seg('goal',GOALS,P.goal)}
+  <label class="f" style="margin-top:8px">Уровень подготовки</label>${seg('level',LEVELS,P.level)}
+  <label class="f" style="margin-top:8px">Дни тренировок (выбери 2–4)</label>
+  <div class="seg days">${WD.map((d,i)=>`<button class="${P.days.includes(i)?'on':''}" data-act="pf-day" data-pre="${pre}" data-i="${i}">${d}</button>`).join('')}</div>
+  <label class="f" style="margin-top:8px">Кисть или запястье</label>
+  <div class="seg"><button class="${P.wrist?'on':''}" data-act="pf" data-pre="${pre}" data-key="wrist" data-v="1">Берегу кисть</button><button class="${!P.wrist?'on':''}" data-act="pf" data-pre="${pre}" data-key="wrist" data-v="0">Нет проблем</button></div>
+  <label class="f" style="margin-top:8px" for="${pre}-start">Начало 1-й недели (понедельник)</label><input id="${pre}-start" type="date" value="${P.start}" data-act="pf-start" data-pre="${pre}"></div>`;
+}
+
+/* ---------- сегодня ---------- */
+function planLine(it){
+  const e=EX[it.id];
+  const tgt=e.time?`${it.sets} × ${it.sec} с`:`${it.sets} × ${it.lo}–${it.hi}`;
+  const w=e.time?'':it.kg==null?'вес подберём':it.kg===0?'вес тела':`${fmt(it.kg)} кг`;
+  return {tgt,w};
+}
+function todayHtml(){
+  ensureRamp();
+  const P=S.profile,t=todayK(),def=nextDay(),ready=UI.ready;
+  const doneToday=allSessions().filter(s=>s.date===t&&!s.adhoc);
+  const sched=P.days.includes(wdi(t));
+  const plan=planDay(def,t,ready);
+  const cards=coachCards().map(c=>`<div class="note ${c.tone}"><b>${esc(c.h)}</b><span class="sm">${esc(c.t)}</span>${c.act?`<button class="btn sm" data-act="coach" data-k="${c.act.k}">${esc(c.act.l)}</button>`:''}</div>`).join('');
+  let main;
+  if(S.draft){
+    main=`<section class="card"><div class="row sp"><h2>Тренировка не завершена</h2><span class="chip warn">черновик</span></div><p class="sm mute">${esc(S.draft.title)} · ${dateRu(S.draft.date)}</p><button class="btn pri blk" data-act="draft-open">Продолжить</button><button class="btn ghost blk" data-act="draft-drop">Удалить черновик</button></section>`;
+  }else{
+    main=`<section class="card">
+      <div class="row sp"><div><div class="mute xs">${sched?'Сегодня по расписанию':'Следующая по списку'}${doneToday.length?' · на сегодня уже записана':''}</div><h2>${esc(def.t)}</h2></div><span class="chip ${plan.dl?'warn':'acc'}">Неделя ${plan.week} · запас ${plan.items[0]?plan.items[0].rir:''}</span></div>
+      <div><div class="xs mute" style="margin-bottom:6px">Как самочувствие?</div><div class="seg" role="group" aria-label="Самочувствие">
+        ${[[5,'Бодрый'],[3,'Обычно'],[1,'Вымотан']].map(([v,n])=>`<button class="${(UI.ready||3)===v?'on':''}" data-act="ready" data-v="${v}">${n}</button>`).join('')}</div>
+        ${UI.ready===1?'<div class="xs mute" style="margin-top:6px">Облегчаю сегодня: вес −8%, на подход меньше.</div>':''}</div>
+      <div class="list">${plan.items.map(it=>{const l=planLine(it),e=EX[it.id];return `<div class="li"><div class="grow"><b>${esc(e.n)}</b>${it.avoid?`<div class="xs" style="color:var(--bad)">Зона травмы: пропусти${it.alt?` или замени на «${esc(EX[it.alt].n)}»`:''}</div>`:''}${it.grip?'<div class="xs mute">Лямки, кисть прямая</div>':''}</div><div style="text-align:right"><div class="num">${l.tgt}</div><div class="xs mute">${l.w}</div></div></div>`}).join('')}</div>
+      <button class="btn pri blk" data-act="start">Начать тренировку</button>
+      <button class="btn ghost blk" data-act="start-free">Записать свою тренировку</button></section>`;
+  }
+  return `<h1>Сегодня</h1><div class="mute sm" style="margin-top:-8px">${dateRu(t)}</div>${cards}${main}
+  ${doneToday.length?`<section class="card"><h3>Записано сегодня</h3>${doneToday.map(s=>sessionBrief(s)).join('')}</section>`:''}`;
+}
+const volOf=s=>Math.round(s.ex.reduce((a,x)=>a+x.sets.filter(y=>y.done&&!EX[x.id]?.time).reduce((b,y)=>b+(+y.kg||0)*(+y.reps||0),0),0));
+const doneSets=s=>s.ex.reduce((a,x)=>a+x.sets.filter(y=>y.done).length,0);
+function sessionBrief(s){return `<div class="li"><div class="grow"><b>${esc(s.title)}</b><div class="xs mute">${doneSets(s)} подходов · ${volOf(s).toLocaleString('ru-RU')} кг объёма</div></div></div>`}
+
+/* ---------- дневник ---------- */
+function diaryHtml(){
+  const ss=allSessions().slice().reverse();
+  const body=ss.length?ss.map(s=>{
+    const open=UI.open[s.id];
+    return `<section class="card"><div class="row sp" data-act="dopen" data-id="${s.id}" style="cursor:pointer"><div class="grow"><b>${esc(s.title)}</b><div class="xs mute">${dateRu(s.date)}${s.week?` · неделя ${s.week}`:''}</div></div><div style="text-align:right"><div class="num">${volOf(s).toLocaleString('ru-RU')} кг</div><div class="xs mute">${doneSets(s)} подх.</div></div></div>
+    ${open?`<div class="list">${s.ex.map(x=>`<div class="li" style="align-items:flex-start"><div class="grow"><b>${esc(EX[x.id]?EX[x.id].n:x.id)}</b><div class="xs mute">${x.sets.filter(y=>y.done).map(y=>EX[x.id]&&EX[x.id].time?`${y.reps} с`:`${fmt(+y.kg)}×${y.reps}`).join(' · ')||'не выполнено'}${x.feel?` · ${({easy:'легко',ok:'нормально',hard:'тяжело'})[x.feel]}`:''}</div>${x.note?`<div class="xs">${esc(x.note)}</div>`:''}</div></div>`).join('')}</div>
+    ${s.adapt&&s.adapt.length?`<div class="note"><b>Решения тренера</b>${s.adapt.map(a=>`<span class="sm">${esc(a.text)}</span>`).join('')}</div>`:''}
+    <div class="row">${s.sauna?'<span class="chip good">Баня</span>':''}${s.shower?'<span class="chip good">Прохладный душ</span>':''}${s.bw?`<span class="chip">${fmt(s.bw)} кг вес</span>`:''}</div>
+    <div class="row"><button class="btn sm" data-act="dedit" data-id="${s.id}">Править</button><button class="btn sm dng" data-act="ddel" data-id="${s.id}">Удалить</button></div>`:''}</section>`;
+  }).join(''):`<div class="empty"><b>Дневник пока пуст</b><br>Первая тренировка появится здесь сразу после записи.</div>`;
+  return `<div class="row sp"><h1>Дневник</h1><button class="btn sm pri" data-act="start-free">Записать</button></div>${body}`;
+}
+
+/* ---------- план на 8 недель ---------- */
+function allPlanExercises(){const seen=[];dayDefs().forEach(d=>d.ex.forEach(x=>{if(!seen.includes(x))seen.push(x)}));return seen}
+function forecast(id,n){
+  const lift=S.lifts[id],e=EX[id];if(!lift||lift.w==null)return null;
+  const g=gCurve(S.profile.level),c=weekOf(todayK());
+  if(e.time)return Math.max(15,roundTo(lift.w*g[n]/g[c]*(W[n].dl?.85:1),5));
+  return roundTo(lift.w*g[n]/g[c]*(W[n].dl?.85:1),e.inc);
+}
+function planHtml(){
+  const P=S.profile,cur=weekOf(todayK()),t=todayK();
+  const weeks=W.slice(1).map((w,i)=>{const n=i+1;return `<div class="li"><div class="num" style="width:26px">${n}</div><div class="grow"><b>${w.n}</b><div class="xs mute">${w.dl?'вес −15%, на подход меньше':n>=5?'комплексные упражнения: на 2 повтора меньше, вес выше':'рабочий объём'} · запас ${w.rt}</div></div>${n===cur&&!cycleDone(t)?'<span class="chip acc">сейчас</span>':''}</div>`}).join('');
+  const ex=allPlanExercises();
+  const head=`<tr><th>Упражнение</th>${[1,2,3,4,5,6,7,8].map(n=>`<th class="${n===cur?'cur':''}">${n}</th>`).join('')}</tr>`;
+  const rows=ex.map(id=>{const e=EX[id];return `<tr><td>${esc(e.n)}</td>${[1,2,3,4,5,6,7,8].map(n=>{const v=forecast(id,n);return `<td class="${n===cur?'cur':''}">${v==null?'—':fmt(v,1)}</td>`}).join('')}</tr>`}).join('');
+  return `<h1>План</h1>
+  <section class="card"><div class="row sp"><h2>${GOALS[P.goal].n}</h2><span class="chip">${LEVELS[P.level].n} · ${P.days.length} ${plural(P.days.length,'день','дня','дней')}</span></div>
+  <p class="sm mute">${P.days.slice().sort().map(d=>WD[d]).join(', ')} · старт ${dateRu(P.start)}. Прогноз весов считается от твоих текущих рабочих весов и пересчитывается после каждой тренировки.</p></section>
+  <section class="card"><h3>Недели цикла</h3><div class="list">${weeks}</div></section>
+  <section class="card"><h3>Прогноз рабочих весов, кг</h3><div class="scroll"><table>${head}${rows}</table></div><p class="xs mute">Прочерк — вес пока не известен: тренер подберёт его на первой тренировке. В планку вместо кг идут секунды.</p></section>
+  <section class="card"><h3>Состав тренировок</h3>${dayDefs().map((d,di)=>`<div><b>${esc(d.t)}</b><div class="list">${d.ex.map((id,i)=>`<div class="li"><div class="grow">${esc(EX[id].n)}</div><button class="btn sm ghost" data-act="swap" data-d="${d.id}" data-i="${i}">Заменить</button></div>`).join('')}</div></div>`).join('')}</section>`;
+}
+
+/* ---------- прогресс ---------- */
+function exHistory(id){
+  const out=[];allSessions().forEach(s=>{
+    s.ex.forEach(x=>{if(x.id!==id)return;const d=x.sets.filter(y=>y.done&&+y.reps>0);if(!d.length)return;
+      if(EX[id].time)out.push({k:s.date,y:Math.max(...d.map(y=>+y.reps))});
+      else out.push({k:s.date,y:Math.max(...d.map(y=>e1(+y.kg||0,+y.reps)))})})});
+  return out;
+}
+function lineChart(pts,unit){
+  if(pts.length<2)return `<div class="empty sm">Нужно хотя бы две тренировки с этим упражнением</div>`;
+  const W_=320,H=150,l=34,r=8,tp=10,b=24,ys=pts.map(p=>p.y),mn=Math.min(...ys),mx=Math.max(...ys),sp=(mx-mn)||1;
+  const x=i=>l+(W_-l-r)*i/(pts.length-1),y=v=>tp+(H-tp-b)*(1-(v-mn)/sp);
+  const path=pts.map((p,i)=>`${i?'L':'M'}${x(i).toFixed(1)} ${y(p.y).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 ${W_} ${H}" width="100%" role="img" aria-label="Динамика ${unit}">
+   <line x1="${l}" x2="${W_-r}" y1="${y(mn)}" y2="${y(mn)}" stroke="var(--line)"/><line x1="${l}" x2="${W_-r}" y1="${y(mx)}" y2="${y(mx)}" stroke="var(--line)"/>
+   <text x="${l-4}" y="${y(mx)+4}" text-anchor="end">${fmt(mx,0)}</text><text x="${l-4}" y="${y(mn)+4}" text-anchor="end">${fmt(mn,0)}</text>
+   <path d="${path}" fill="none" stroke="var(--acc)" stroke-width="2.2" stroke-linejoin="round"/>
+   ${pts.map((p,i)=>`<circle cx="${x(i)}" cy="${y(p.y)}" r="${i===pts.length-1?4.5:3}" fill="${i===pts.length-1?'var(--acc)':'var(--surf)'}" stroke="var(--acc)" stroke-width="2"/>`).join('')}
+   <text x="${l}" y="${H-6}">${parseK(pts[0].k).getDate()} ${MON[parseK(pts[0].k).getMonth()]}</text><text x="${W_-r}" y="${H-6}" text-anchor="end">${parseK(pts[pts.length-1].k).getDate()} ${MON[parseK(pts[pts.length-1].k).getMonth()]}</text></svg>`;
+}
+function volumeChart(){
+  const t=mondayOf(todayK()),bars=[];
+  for(let i=7;i>=0;i--){const m=addD(t,-7*i),e=addD(m,7);let v=0;allSessions().forEach(s=>{if(s.date>=m&&s.date<e)v+=volOf(s)});bars.push({m,v})}
+  const mx=Math.max(1,...bars.map(b=>b.v)),W_=320,H=130,bw=26,gap=(W_-8*bw)/9;
+  if(bars.every(b=>!b.v))return `<div class="empty sm">Объём появится после первой тренировки</div>`;
+  return `<svg viewBox="0 0 ${W_} ${H}" width="100%" role="img" aria-label="Недельный объём">${bars.map((b,i)=>{const h=Math.max(2,(H-34)*b.v/mx),x=gap+i*(bw+gap);return `<rect x="${x}" y="${H-20-h}" width="${bw}" height="${h}" rx="3" fill="${i===7?'var(--acc)':'var(--surf2)'}" stroke="${i===7?'none':'var(--line)'}"/><text x="${x+bw/2}" y="${H-22-h}" text-anchor="middle">${b.v?Math.round(b.v/100)/10:''}</text><text x="${x+bw/2}" y="${H-6}" text-anchor="middle">${parseK(b.m).getDate()}.${pad(parseK(b.m).getMonth()+1)}</text>`}).join('')}</svg>`;
+}
+function statsHtml(){
+  const ss=allSessions(),ex=allPlanExercises();
+  const sel=UI.exSel&&EX[UI.exSel]?UI.exSel:(ex.find(id=>exHistory(id).length)||ex[0]);
+  const hist=exHistory(sel),e=EX[sel];
+  const first=hist[0],last=hist[hist.length-1];
+  const bwp=ss.filter(s=>s.bw).map(s=>({k:s.date,y:s.bw}));
+  const cnt28=ss.filter(s=>s.date>addD(todayK(),-28)).length;
+  const prs=ex.map(id=>{const h=exHistory(id);if(h.length<2||h[0].y<=0)return null;const a=h[0].y,b=Math.max(...h.map(p=>p.y));return b>a?{id,d:b-a,p:(b/a-1)*100}:null}).filter(Boolean).sort((a,b)=>b.p-a.p).slice(0,5);
+  return `<h1>Прогресс</h1>
+  <div class="row"><div class="card grow"><div class="mute xs">Тренировок за 28 дней</div><div class="num" style="font-size:30px">${cnt28}</div></div><div class="card grow"><div class="mute xs">Всего в дневнике</div><div class="num" style="font-size:30px">${ss.length}</div></div></div>
+  <section class="card"><h3>Объём по неделям, тонн</h3>${volumeChart()}</section>
+  <section class="card"><div class="row sp"><h3>${e.time?'Время удержания, с':'Расчётный максимум, кг'}</h3></div>
+   <label class="f" for="exsel">Упражнение</label><select id="exsel" data-act="exsel">${Object.keys(EX).map(id=>`<option value="${id}"${id===sel?' selected':''}>${esc(EX[id].n)}</option>`).join('')}</select>
+   ${lineChart(hist,e.time?'времени':'расчётного максимума')}
+   ${first&&last&&hist.length>1?`<div class="sm mute">Было ${fmt(first.y,0)} → стало ${fmt(last.y,0)} (${last.y>=first.y?'+':''}${fmt((last.y/first.y-1)*100,0)}%)</div>`:''}
+   <div class="xs mute">${e.time?'':'Расчётный максимум на 1 повтор по формуле Эпли: вес × (1 + повторы / 30). Это ориентир для сравнения, а не тест.'}</div></section>
+  ${prs.length?`<section class="card"><h3>Что выросло больше всего</h3><div class="list">${prs.map(p=>`<div class="li"><div class="grow">${esc(EX[p.id].n)}</div><span class="chip good">+${fmt(p.p,0)}%</span></div>`).join('')}</div></section>`:''}
+  ${bwp.length>1?`<section class="card"><h3>Вес тела, кг</h3>${lineChart(bwp,'веса тела')}</section>`:''}`;
+}
+
+/* ---------- ещё: профиль, веса, перерывы, данные ---------- */
+function moreHtml(){
+  const P=S.profile,ex=allPlanExercises();
+  return `<h1>Ещё</h1>
+  <section class="card"><h2>Профиль</h2>${profileFields(P,'pr')}<div class="xs mute">Смена числа дней пересоберёт состав тренировок. Накопленные веса остаются.</div></section>
+  <section class="card"><h2>Рабочие веса</h2><p class="sm mute">Вес, с которым тебе под силу набрать верхнюю границу повторов с запасом. Оставь пустым: тренер подберёт его на первой тренировке. Планка — секунды.</p>
+   <div class="list">${ex.map(id=>{const e=EX[id],l=S.lifts[id];return `<div class="li"><label class="grow" for="lw-${id}">${esc(e.n)}</label><input id="lw-${id}" style="width:96px;text-align:center" inputmode="decimal" placeholder="${e.time?'сек':'кг'}" value="${l&&l.w!=null?String(l.w).replace('.',','):''}" data-act="lw" data-id="${id}"></div>`}).join('')}</div></section>
+  <section class="card"><h2>Пауза, болезнь, травма</h2><p class="sm mute">Долгую паузу тренер замечает сам. Здесь можно сообщить о болезни или травме, и нагрузка вернётся по лестнице.</p>
+   ${S.ramp?`<div class="note warn"><b>Сейчас действует мягкий вход</b><span class="sm">Осталось тренировок: ${S.ramp.left.length}</span><button class="btn sm" data-act="ramp-end">Завершить досрочно</button></div>`:''}
+   <button class="btn blk" data-act="sheet-ill">Я болел или был в паузе</button><button class="btn blk" data-act="sheet-injury">У меня травма или боль</button><button class="btn blk" data-act="deload">Взять разгрузочную неделю</button></section>
+  <section class="card"><h2>Данные</h2><p class="sm mute" id="syncState">${syncLabel()}</p>
+   <button class="btn blk" data-act="export">Сохранить копию в файл</button><button class="btn blk" data-act="sheet-import">Восстановить из копии</button>
+   <button class="btn blk dng" data-act="sheet-reset">Удалить всё</button></section>`;
+}
+
+/* ============================================================ редактор тренировки */
+function newSession(def,dateK,free){
+  const t=dateK||todayK();
+  if(free||!def)return {id:uid(),created:Date.now(),date:t,dayId:null,title:'Своя тренировка',adhoc:1,ex:[],ready:UI.ready||3};
+  const plan=planDay(def,t,UI.ready);
+  return {id:uid(),created:Date.now(),date:t,dayId:def.id,title:def.t,week:plan.week,ready:UI.ready||3,dl:plan.dl?1:0,
+    ex:plan.items.map(it=>{const e=EX[it.id];return {id:it.id,skip:it.avoid?1:0,plan:{sets:it.sets,lo:it.lo,hi:it.hi,kg:it.kg,sec:it.sec,rir:it.rir,warm:it.warm,grip:it.grip,alt:it.alt},
+      sets:Array.from({length:it.sets},()=>({kg:e.time?0:it.kg==null?'':it.kg,reps:e.time?it.sec:'',done:0})),feel:null,note:''}})};
+}
+function persistDraft(){if(UI.editor&&UI.editor.isNew){S.draft=UI.editor.s;saveState()}}
+function openEditor(s,isNew){UI.editor={s,isNew};renderEditor();$('#ed').hidden=false;$('#ed').scrollTop=0;document.body.style.overflow='hidden'}
+function closeEditor(){UI.editor=null;$('#ed').hidden=true;document.body.style.overflow='';stopTimer();renderAll()}
+function renderEditor(){
+  const E=UI.editor;if(!E)return;const s=E.s;
+  const cards=s.ex.map((x,xi)=>{
+    const e=EX[x.id]||{n:x.id,inc:1},p=x.plan;
+    const tgt=p?(e.time?`${p.sets} × ${p.sec} с`:`${p.sets} × ${p.lo}–${p.hi}${p.kg!=null?` · ${p.kg===0?'вес тела':fmt(p.kg)+' кг'}`:' · вес подбери'} · запас ${p.rir}`):'';
+    return `<section class="card" data-xi="${xi}" style="${x.skip?'opacity:.6':''}">
+      <div class="row sp"><div class="grow"><h3>${esc(e.n)}</h3>${tgt?`<div class="xs mute">Цель: ${tgt}</div>`:''}${p&&p.warm?`<div class="xs mute">Сначала разминочный подход с половиной веса</div>`:''}${p&&p.grip?'<div class="xs mute">Лямки, кисть прямая</div>':''}${x.skip?`<div class="xs" style="color:var(--bad)">Зона травмы: пропущено${p&&p.alt?`, замена: ${esc(EX[p.alt].n)}`:''}</div>`:''}</div>
+      <button class="btn sm ghost" data-act="ex-menu" data-xi="${xi}" aria-label="Меню упражнения">⋯</button></div>
+      <div class="setrow xs mute"><span></span><span style="text-align:center">${e.time?'Секунды':'Вес, кг'}</span><span style="text-align:center">${e.time?'':'Повторы'}</span><span></span></div>
+      ${x.sets.map((st,si)=>`<div class="setrow"><span class="mute num">${si+1}</span>
+        ${e.time?`<span class="xs mute" style="text-align:center">—</span><input aria-label="Секунды" inputmode="numeric" value="${st.reps}" data-f="reps" data-xi="${xi}" data-si="${si}">`:`<div class="kgbox"><button data-act="kg-" data-xi="${xi}" data-si="${si}" aria-label="Меньше">−</button><input aria-label="Вес" inputmode="decimal" value="${st.kg===''?'':String(st.kg).replace('.',',')}" data-f="kg" data-xi="${xi}" data-si="${si}"><button data-act="kg+" data-xi="${xi}" data-si="${si}" aria-label="Больше">+</button></div>
+        <input aria-label="Повторы" inputmode="numeric" placeholder="${p?(p.lo+'–'+p.hi):''}" value="${st.reps}" data-f="reps" data-xi="${xi}" data-si="${si}">`}
+        <button class="ok${st.done?' on':''}" data-act="ok" data-xi="${xi}" data-si="${si}" aria-label="Подход выполнен" aria-pressed="${st.done?'true':'false'}">✓</button></div>`).join('')}
+      <div class="row"><button class="btn sm" data-act="addset" data-xi="${xi}">+ подход</button>${x.sets.length>1?`<button class="btn sm ghost" data-act="delset" data-xi="${xi}">− подход</button>`:''}</div>
+      <div><div class="xs mute" style="margin-bottom:4px">Как пошло?</div><div class="seg">${[['easy','Легко'],['ok','Нормально'],['hard','Тяжело']].map(([k,n])=>`<button class="${x.feel===k?'on':''}" data-act="feel" data-xi="${xi}" data-v="${k}">${n}</button>`).join('')}</div></div>
+      <input aria-label="Заметка" placeholder="Заметка: техника, самочувствие, боль" value="${esc(x.note)}" data-f="note" data-xi="${xi}"></section>`}).join('');
+  $('#ed').innerHTML=`<div class="wrap"><div class="hdr"><button class="btn sm" data-act="ed-back">← Назад</button><div class="grow"><b>${esc(s.title)}</b></div></div>
+   <div class="row"><label class="f grow" for="ed-date">Дата<input id="ed-date" type="date" value="${s.date}" data-f="date"></label><label class="f grow" for="ed-bw">Вес тела, кг<input id="ed-bw" inputmode="decimal" placeholder="необязательно" value="${s.bw?String(s.bw).replace('.',','):''}" data-f="bw"></label></div>
+   ${cards||'<div class="empty">Добавь первое упражнение</div>'}
+   <button class="btn blk" data-act="ex-add">+ Упражнение</button>
+   <button class="btn pri blk" data-act="finish">${E.isNew?'Завершить тренировку':'Сохранить изменения'}</button></div>`;
+}
+
+/* ---------- таймер отдыха ---------- */
+let TM={end:0,iv:null,fin:0,ctx:null};
+function beep(){try{const C=TM.ctx;if(!C)return;const o=C.createOscillator(),g=C.createGain();o.connect(g);g.connect(C.destination);g.gain.value=.15;o.frequency.value=880;o.start();o.stop(C.currentTime+.3)}catch(e){}}
+function startTimer(sec){
+  if(!TM.ctx){try{TM.ctx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}   // звук разрешается тапом по «✓»
+  TM.fin=0;TM.end=Date.now()+sec*1000;$('#timer').hidden=false;if(!TM.iv)TM.iv=setInterval(tickTimer,250);tickTimer()}
+function stopTimer(){clearInterval(TM.iv);TM.iv=null;TM.fin=0;$('#timer').hidden=true}
+function tickTimer(){const r=Math.max(0,Math.ceil((TM.end-Date.now())/1000));$('#tmv').textContent=`${Math.floor(r/60)}:${pad(r%60)}`;
+  if(r===0&&!TM.fin){TM.fin=1;try{navigator.vibrate&&navigator.vibrate(200)}catch(e){}beep();setTimeout(()=>{if(TM.fin)stopTimer()},2500)}}
+
+/* ---------- листы ---------- */
+function openSheet(html){$('#sheet').innerHTML=html;$('#sheetbg').hidden=false}
+function closeSheet(){$('#sheetbg').hidden=true;UI.sheet=null}
+function exOptions(sel){return Object.keys(EX).map(id=>`<option value="${id}"${id===sel?' selected':''}>${esc(EX[id].n)}</option>`).join('')}
+
+/* ============================================================ события */
+document.addEventListener('click',async ev=>{
+  const b=ev.target.closest('[data-act]');if(!b||b.tagName==='INPUT'||b.tagName==='SELECT')return;
+  const a=b.dataset.act,E=UI.editor;
+  const set=()=>E.s.ex[+b.dataset.xi].sets[+b.dataset.si];
+  const mark=()=>{persistDraft()};
+  switch(a){
+    case 'tab':return go(b.dataset.k);
+    case 'pf':{const P=b.dataset.pre==='ob'?UI.ob:S.profile;const v=b.dataset.v;P[b.dataset.key]=b.dataset.key==='wrist'?v==='1':v;if(b.dataset.pre==='pr')saveState();return renderAll()}
+    case 'pf-day':{const P=b.dataset.pre==='ob'?UI.ob:S.profile,i=+b.dataset.i;const has=P.days.includes(i);
+      if(has&&P.days.length<=2)return;if(!has&&P.days.length>=4)return;
+      const old=P.days.length;P.days=has?P.days.filter(x=>x!==i):[...P.days,i].sort();
+      if(b.dataset.pre==='pr'){if(P.days.length!==old)S.slots=slotsFor(P.days.length);saveState()}return renderAll()}
+    case 'ob-go':{if(UI.syncing)return;S.profile=UI.ob;S.slots=slotsFor(S.profile.days.length);UI.ob=null;saveState();return go('today')}
+    case 'ready':UI.ready=+b.dataset.v;return renderAll();
+    case 'start':{ensureRamp();S.draft=null;openEditor(newSession(nextDay(),todayK()),true);persistDraft();return}
+    case 'start-free':{openEditor(newSession(null,todayK(),true),true);persistDraft();return}
+    case 'draft-open':return openEditor(S.draft,true);
+    case 'draft-drop':S.draft=null;saveState();return renderAll();
+    case 'coach':{const k=b.dataset.k;
+      if(k==='restart'){S.profile.start=wdi(todayK())<=1?mondayOf(todayK()):addD(mondayOf(todayK()),7);S.deloadUntil=null;saveState();toast('Цикл начнётся с понедельника')}
+      if(k==='deload'){S.deloadUntil=addD(todayK(),6);saveState()}
+      return renderAll()}
+    case 'deload':S.deloadUntil=addD(todayK(),6);saveState();return renderAll();
+    case 'ramp-end':S.ramp=null;saveState();return renderAll();
+    case 'dopen':UI.open[b.dataset.id]=!UI.open[b.dataset.id];return renderAll();
+    case 'dedit':{const s=allSessions().find(x=>x.id===b.dataset.id);return s&&openEditor(clone(s),false)}
+    case 'ddel':return openSheet(`<h2>Удалить тренировку?</h2><p class="sm mute">Запись исчезнет из дневника. Рабочие веса, которые тренер уже поменял, не откатятся.</p><button class="btn dng blk" data-act="ddel-ok" data-id="${b.dataset.id}">Удалить</button><button class="btn ghost blk" data-act="sheet-x">Отмена</button>`);
+    case 'ddel-ok':{const id=b.dataset.id;const mk=Object.keys(LOG).find(m=>LOG[m].sessions.some(x=>x.id===id));if(mk){LOG[mk].sessions=LOG[mk].sessions.filter(x=>x.id!==id);LOG[mk].del=Object.assign(LOG[mk].del||{},{[id]:Date.now()});saveLog(mk)}closeSheet();return renderAll()}
+    case 'swap':{if(!S.slots)S.slots=slotsFor(S.profile.days.length);UI.swap={d:b.dataset.d,i:+b.dataset.i};const cur=S.slots[UI.swap.d][UI.swap.i];const alts=(GRP_ALT[EX[cur].grp]||[]).filter(x=>x!==cur);
+      openSheet(`<h2>Заменить упражнение</h2><p class="sm mute">${esc(EX[cur].n)}</p><label class="f" for="swsel">На что заменить<select id="swsel">${[...alts,...Object.keys(EX).filter(x=>!alts.includes(x)&&x!==cur)].map(id=>`<option value="${id}">${esc(EX[id].n)}</option>`).join('')}</select></label><button class="btn pri blk" data-act="swap-ok">Заменить</button><button class="btn ghost blk" data-act="sheet-x">Отмена</button>`);return}
+    case 'swap-ok':{const v=$('#swsel').value;S.slots[UI.swap.d][UI.swap.i]=v;saveState();closeSheet();return renderAll()}
+    case 'sheet-x':return closeSheet();
+    case 'exsel':return;
+    case 'sheet-ill':return openSheet(`<h2>Пауза или болезнь</h2><label class="f" for="ill-d">Сколько дней не тренировался<input id="ill-d" inputmode="numeric" value="10"></label><p class="sm mute">Тренер снизит вес на первых тренировках и вернёт рабочие веса по ступеням.</p><button class="btn pri blk" data-act="ill-ok">Применить</button><button class="btn ghost blk" data-act="sheet-x">Отмена</button>`);
+    case 'ill-ok':{const d=Math.max(1,parseInt($('#ill-d').value)||8);S.ramp=Object.assign({kind:'break',gap:d,since:addD(todayK(),-d)},rampFor(Math.max(8,d)));saveState();closeSheet();return renderAll()}
+    case 'sheet-injury':return openSheet(`<h2>Травма или боль</h2><label class="f" for="inj-a">Какая зона<select id="inj-a">${Object.entries(AREAS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label><p class="sm mute">Пять тренировок по лестнице 60 → 100% веса. Упражнения на эту зону будут помечены с заменой. Если боль острая, держится или отдаёт в руку или ногу, сначала к врачу.</p><button class="btn pri blk" data-act="inj-ok">Применить</button><button class="btn ghost blk" data-act="sheet-x">Отмена</button>`);
+    case 'inj-ok':{S.ramp={kind:'injury',avoid:$('#inj-a').value,since:todayK(),gap:0,left:[.6,.7,.8,.9,1],cut:2};saveState();closeSheet();return renderAll()}
+    case 'export':{const data=JSON.stringify({v:1,state:S,log:LOG});
+      try{const d=await window.claude.use('downloads');if(!d)throw 0;await d.save({filename:`forma-${todayK()}.json`,data});toast('Копия сохранена')}
+      catch(e){openSheet(`<h2>Копия данных</h2><p class="sm mute">Скопируй текст и сохрани в заметках.</p><textarea id="exp" readonly>${esc(data)}</textarea><button class="btn pri blk" data-act="sheet-x">Готово</button>`);setTimeout(()=>{const t=$('#exp');t&&t.select()},50)}return}
+    case 'sheet-import':return openSheet(`<h2>Восстановить из копии</h2><p class="sm mute">Вставь текст копии. Текущие данные будут заменены.</p><textarea id="imp" placeholder="{...}"></textarea><div class="note warn" id="imperr" hidden></div><button class="btn pri blk" data-act="imp-ok">Восстановить</button><button class="btn ghost blk" data-act="sheet-x">Отмена</button>`);
+    case 'imp-ok':{try{const o=JSON.parse($('#imp').value);if(!o||!o.state||!o.log||typeof o.log!=='object')throw 0;
+      Object.values(o.log).forEach(m=>{if(!m||!Array.isArray(m.sessions))throw 0;m.sessions.forEach(s=>{if(!s||!s.date||!Array.isArray(s.ex))throw 0})});
+      S=Object.assign({profile:null,slots:null,lifts:{},ramp:null,deloadUntil:null,draft:null},o.state);const old=Object.keys(LOG);LOG=o.log;old.forEach(m=>{if(!LOG[m])LOG[m]={sessions:[]}});saveState();Object.keys(LOG).forEach(saveLog);closeSheet();return go('today')}
+      catch(e){const m=$('#imperr');m.hidden=false;m.textContent='Не удалось прочитать копию. Проверь, что скопирован весь текст.';return}}
+    case 'sheet-reset':return openSheet(`<h2>Удалить всё?</h2><p class="sm mute">Профиль, веса и весь дневник будут стёрты на этом устройстве и в синхронизации. Сначала сделай копию.</p><button class="btn dng blk" data-act="reset-ok">Да, удалить</button><button class="btn ghost blk" data-act="sheet-x">Отмена</button>`);
+    case 'reset-ok':{Object.keys(LOG).forEach(m=>{LOG[m]={sessions:[]};saveLog(m)});S={profile:null,slots:null,lifts:{},ramp:null,deloadUntil:null,draft:null,_ts:0};saveState();closeSheet();return renderAll()}
+    /* --- редактор --- */
+    case 'ed-back':{if(E.isNew){persistDraft()}closeEditor();return}
+    case 'ok':{const st=set(),x=E.s.ex[+b.dataset.xi];
+      if(!st.done&&!(+st.reps>0)){const inp=$(`#ed [data-f="reps"][data-xi="${b.dataset.xi}"][data-si="${b.dataset.si}"]`);inp&&inp.focus();return}
+      st.done=st.done?0:1;persistDraft();renderEditor();if(st.done)startTimer(restSec(x.id));else stopTimer();return}
+    case 'kg+':case 'kg-':{const st=set(),inc=(EX[E.s.ex[+b.dataset.xi].id]||{inc:2.5}).inc;const v=(parseFloat(String(st.kg).replace(',','.'))||0)+(a==='kg+'?inc:-inc);st.kg=Math.max(0,+v.toFixed(2));persistDraft();renderEditor();return}
+    case 'addset':{const x=E.s.ex[+b.dataset.xi],l=x.sets[x.sets.length-1];x.sets.push({kg:l?l.kg:'',reps:EX[x.id].time&&l?l.reps:'',done:0});persistDraft();renderEditor();return}
+    case 'delset':{E.s.ex[+b.dataset.xi].sets.pop();persistDraft();renderEditor();return}
+    case 'feel':{const x=E.s.ex[+b.dataset.xi];x.feel=x.feel===b.dataset.v?null:b.dataset.v;persistDraft();renderEditor();return}
+    case 'ex-add':return openSheet(`<h2>Добавить упражнение</h2><label class="f" for="addsel">Упражнение<select id="addsel">${exOptions('')}</select></label><button class="btn pri blk" data-act="ex-add-ok">Добавить</button><button class="btn ghost blk" data-act="sheet-x">Отмена</button>`);
+    case 'ex-add-ok':{const id=$('#addsel').value,e=EX[id],l=S.lifts[id];E.s.ex.push({id,sets:[{kg:e.time?0:l&&l.w!=null?l.w:'',reps:e.time?(l&&l.w)||30:'',done:0}],feel:null,note:''});persistDraft();closeSheet();renderEditor();return}
+    case 'ex-menu':{const xi=+b.dataset.xi,x=E.s.ex[xi];const alts=(GRP_ALT[EX[x.id].grp]||[]).filter(i=>i!==x.id);
+      openSheet(`<h2>${esc(EX[x.id].n)}</h2>${alts.length?`<label class="f" for="rep">Заменить на<select id="rep">${alts.map(i=>`<option value="${i}">${esc(EX[i].n)}</option>`).join('')}</select></label><button class="btn blk" data-act="ex-rep" data-xi="${xi}">Заменить</button>`:''}<button class="btn blk" data-act="ex-skip" data-xi="${xi}">${x.skip?'Вернуть в тренировку':'Пропустить'}</button><button class="btn dng blk" data-act="ex-del" data-xi="${xi}">Убрать из тренировки</button><button class="btn ghost blk" data-act="sheet-x">Закрыть</button>`);return}
+    case 'ex-rep':{const x=E.s.ex[+b.dataset.xi],id=$('#rep').value,e=EX[id],l=S.lifts[id];x.id=id;x.skip=0;x.plan=null;x.sets.forEach(s=>{s.done=0;s.kg=e.time?0:l&&l.w!=null?l.w:'';s.reps=e.time?(l&&l.w)||30:''});persistDraft();closeSheet();renderEditor();return}
+    case 'ex-skip':{const x=E.s.ex[+b.dataset.xi];x.skip=x.skip?0:1;persistDraft();closeSheet();renderEditor();return}
+    case 'ex-del':{E.s.ex.splice(+b.dataset.xi,1);persistDraft();closeSheet();renderEditor();return}
+    case 'finish':{
+      const s=E.s;
+      if(!s.ex.some(x=>x.sets.some(y=>y.done))){return openSheet(`<h2>Нет выполненных подходов</h2><p class="sm mute">Отметь подходы галочкой справа, тогда они попадут в дневник и тренер сможет рассчитать нагрузку.</p><button class="btn pri blk" data-act="sheet-x">Понятно</button>`)}
+      return openSheet(`<h2>После тренировки</h2><div class="seg"><button id="fs-sauna" data-act="tgl" data-k="sauna" class="${s.sauna?'on':''}">Была баня</button><button id="fs-shower" data-act="tgl" data-k="shower" class="${s.shower?'on':''}">Прохладный душ</button></div><p class="xs mute">Баня после зала — 2 захода по 8–12 минут, душ 30–60 секунд, потом вода и белок.</p><button class="btn pri blk" data-act="finish-ok">Сохранить</button><button class="btn ghost blk" data-act="sheet-x">Назад</button>`)}
+    case 'tgl':{const s=E.s;s[b.dataset.k]=s[b.dataset.k]?0:1;b.classList.toggle('on',!!s[b.dataset.k]);return}
+    case 'finish-ok':{
+      const s=E.s;s.ex=s.ex.filter(x=>x.sets.some(y=>y.done)||x.note);let notes=[];
+      if(E.isNew){notes=finalizeSession(s);S.draft=null;saveState()}
+      const mk=s.date.slice(0,7);LOG[mk]=LOG[mk]||{sessions:[]};
+      const list=LOG[mk].sessions;const i=list.findIndex(x=>x.id===s.id);
+      // при переносе на другой месяц убираем старую копию
+      Object.keys(LOG).forEach(m=>{if(m!==mk){const n=LOG[m].sessions.length;LOG[m].sessions=LOG[m].sessions.filter(x=>x.id!==s.id);if(LOG[m].sessions.length!==n)saveLog(m)}});
+      s.upd=Date.now();if(i>=0)list[i]=s;else list.push(s);
+      saveLog(mk);
+      const wasNew=E.isNew;UI.ready=null;closeSheet();closeEditor();UI.tab=wasNew?'today':'diary';
+      if(wasNew&&notes.length)openSheet(`<h2>Итоги тренировки</h2><div class="list">${notes.map(n=>`<div class="li"><span class="chip ${n.kind==='up'?'good':n.kind==='down'?'warn':''}">${({up:'Рост',down:'Снижение',keep:'Держим',set:'Подбор'})[n.kind]}</span><div class="grow sm">${esc(n.text)}</div></div>`).join('')}</div><p class="xs mute">Эти решения уже учтены в следующей тренировке и в прогнозе на вкладке «План».</p><button class="btn pri blk" data-act="sheet-x">Хорошо</button>`);
+      return renderAll()}
+    case 'tm-add':TM.end+=30000;return tickTimer();
+    case 'tm-stop':return stopTimer();
+  }
+});
+document.addEventListener('input',ev=>{
+  const t=ev.target,E=UI.editor;
+  if(t.dataset.f&&E){
+    const s=E.s,xi=t.dataset.xi!=null?+t.dataset.xi:null,si=t.dataset.si!=null?+t.dataset.si:null,f=t.dataset.f;
+    if(f==='date'){if(t.value)s.date=t.value}
+    else if(f==='bw'){const v=parseFloat(t.value.replace(',','.'));s.bw=v>0?v:0}
+    else if(f==='note')s.ex[xi].note=t.value;
+    else if(f==='kg'){const st=s.ex[xi].sets[si];st.kg=t.value===''?'':(parseFloat(t.value.replace(',','.'))||0)}
+    else if(f==='reps'){const st=s.ex[xi].sets[si];st.reps=t.value===''?'':(parseInt(t.value)||0)}
+    clearTimeout(UI.dt);UI.dt=setTimeout(persistDraft,500);return;
+  }
+  if(t.dataset.act==='lw'){const v=parseFloat(t.value.replace(',','.'));const id=t.dataset.id;if(t.value.trim()===''){delete S.lifts[id]}else if(v>=0)S.lifts[id]={w:v};saveState()}
+});
+document.addEventListener('change',ev=>{
+  const t=ev.target;
+  if(t.dataset.act==='exsel'){UI.exSel=t.value;renderAll()}
+  if(t.dataset.act==='pf-start'&&t.value){const P=t.dataset.pre==='ob'?UI.ob:S.profile;P.start=mondayOf(t.value);if(t.dataset.pre==='pr')saveState();renderAll()}
+});
+let toastT;function toast(m){let el=$('#toast');if(!el){el=document.createElement('div');el.id='toast';el.setAttribute('role','status');el.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;z-index:80;font-size:14px;max-width:90%';document.body.appendChild(el)}el.textContent=m;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{el.hidden=true},2600)}
+$('#sheetbg').addEventListener('click',e=>{if(e.target.id==='sheetbg')closeSheet()});
+window.addEventListener('hashchange',()=>{const k=location.hash.slice(1);if(TABS.some(t=>t[0]===k)&&k!==UI.tab){UI.tab=k;renderAll()}});
+
+/* ============================================================ старт */
+loadLocal();
+{const k=location.hash.slice(1);if(TABS.some(t=>t[0]===k))UI.tab=k}
+if(S.draft&&S.profile){/* черновик предложит продолжить на вкладке «Сегодня» */}
+if(S.profile)autoCycle();
+renderAll();
+initSync();
+setTimeout(()=>{if(UI.syncing){UI.syncing=false;if(!S.profile)renderAll()}},4000);
+</script>
+
+<script>
+// вне claude.ai: просим браузер не стирать данные и ставим офлайн-кэш
+if (!window.claude) {
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
